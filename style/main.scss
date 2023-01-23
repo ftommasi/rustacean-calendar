@@ -1,0 +1,17 @@
+body {
+	font-family: sans-serif;
+	text-align: center;
+}
+
+
+.Row {
+    display: table;
+    width: 100%; /*Optional*/
+    table-layout: fixed; /*Optional*/
+    border-spacing: 2px; /*Optional*/
+}
+.Column {
+    display: table-cell;
+    background-color: #777777; /*Optional*/
+	height: 80px;
+}
