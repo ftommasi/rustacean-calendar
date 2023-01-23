@@ -43,11 +43,11 @@ fn CounterButton(cx : Scope,  get_count_fn :ReadSignal<i32> , set_count_fn : Wri
         |count| {
             *count -= 1; 
         });
-        let temp = get_count_fn();
+        //let temp = get_count_fn.get();
     //take currently captured value and display in view
     view!{ cx,
         <button on:click=inc_button>" +1 "</button>
-        <h2>{temp}</h2>
+        <h2>{get_count_fn}</h2>
         <button on:click=dec_button>"- 1 "</button>
     }
 }
