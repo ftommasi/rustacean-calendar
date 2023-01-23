@@ -30,13 +30,24 @@ pub fn App(cx: Scope) -> impl IntoView {
 }
 
 #[component]
-fn CounterButton(cx : Scope) -> impl IntoView{
-    let (count, set_count) = create_signal(cx, 0);
-    let inc_button = move |_| set_count.update(|count| *count += 1);
-    let dec_button = move |_| set_count.update(|count| *count -= 1);
+fn CounterButton(cx : Scope,  get_count_fn :ReadSignal<i32> , set_count_fn : WriteSignal<i32>) -> impl IntoView{
+    let mut cur_count = 0 ; // use value to capture updated count from signal
+    
+    //use WriteSignals to update count value and capture for current view
+    let inc_button = move |_| set_count_fn.update(
+        |count| {
+            *count += 1; 
+        });
+
+    let dec_button = move |_| set_count_fn.update(
+        |count| {
+            *count -= 1; 
+        });
+        let temp = get_count_fn();
+    //take currently captured value and display in view
     view!{ cx,
         <button on:click=inc_button>" +1 "</button>
-        <h2>{count}</h2>
+        <h2>{temp}</h2>
         <button on:click=dec_button>"- 1 "</button>
     }
 }
@@ -119,16 +130,17 @@ fn CalendarDay(cx: Scope, day_num : u32) -> impl IntoView{
 #[component]
 fn HomePage(cx: Scope) -> impl IntoView {
     // Creates a reactive value to update the button
-    let today = chrono::Utc::now();
-    let year  = today.year();
-    let month = today.month();
-    let day   = today.day();
+    let (today, set_today) = create_signal(cx,chrono::Utc::now());
+    let (year, set_year)          = create_signal(cx,today.get().year());
+    let (month, set_month) = create_signal(cx,today.get().month());
+    let (day, set_day)   = create_signal(cx,today.get().day());
+    let (count, set_count) = create_signal(cx, 0);
 
     view! { cx,
        
         <h1>"Today: " {year} " - " {month} " - "  {day}</h1>
-        <CounterButton /> //Add 1
+        <CounterButton  get_count_fn=count set_count_fn= set_count/> //Add 1
         <EnterValueField /> //set arbitrary
-        <CalendarDay day_num = day/>
+        <CalendarDay day_num = day.get()/>
     }
 }
