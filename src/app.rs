@@ -127,26 +127,29 @@ fn CalendarDay(cx: Scope, day_num : u32) -> impl IntoView{
 }
 
 #[component]
-fn Date(cx : Scope, date_today : chrono::DateTime<chrono::Utc>, set_today_date : WriteSignal<chrono::DateTime<chrono::Utc>>) -> impl IntoView{
+fn Date(cx : Scope, date_today : ReadSignal<chrono::DateTime<chrono::Utc>>, set_today_date : WriteSignal<chrono::DateTime<chrono::Utc>>) -> impl IntoView{
     let inc_date =
      move |_| set_today_date.update(
         |today|{ 
         *today += chrono::Duration::days(1);
-        log!("today is now {}-{}-{}",today.year(),today.month(),today.day());
+        log!("in inc_date: today is now {}-{}-{}",today.year(),today.month(),today.day());
     });
 
     let dec_date = 
     move |_| set_today_date.update(
         |today| {
         *today -= chrono::Duration::days(1);
-        log!("today is now {}-{}-{}",today.year(),today.month(),today.day());
+        log!("in dec_date: today is now {}-{}-{}",today.year(),today.month(),today.day());
     });
-    let year_ret  = set_today_date.update_returning(|today| today.year());
-    let month_ret = set_today_date.update_returning(|today| today.month());
-    let day_ret   = set_today_date.update_returning(|today| today.day());
-    let year  = year_ret.unwrap();
-    let month = month_ret.unwrap();
-    let day   = day_ret.unwrap();
+    
+    let mut year  = date_today().year();
+    let mut month = date_today().month();
+    let mut day   = date_today().day();
+    
+    //lets create an effect that will subscribe to date_today ReadSignal and update our local instances for what is displayed in the component
+    create_effect(cx,move |_|{
+        log::debug!("in create_effect: today is now {}-{}-{}",date_today().year(),date_today().month(),date_today().day());
+    });
     //let day = date_today.
     view!{cx,
         <div class="Row">
@@ -154,7 +157,7 @@ fn Date(cx : Scope, date_today : chrono::DateTime<chrono::Utc>, set_today_date :
                 <button on:click= dec_date> "<" </button>
             </div>
             <div class="Column">
-                <h1>"Today: " {year} " - " {month} " - "  {date_today.day()}</h1>
+                <h1>"Today: " {year} " - " {month} " - "  {set_today_date.update_returning(|today| {let ret = today.day(); log!("in view today is {}",ret); ret})}</h1>
             </div>
             <div class="Column">
                 <button on:click= inc_date> ">" </button>
@@ -163,18 +166,63 @@ fn Date(cx : Scope, date_today : chrono::DateTime<chrono::Utc>, set_today_date :
     }
 }
 
+//TODO implement this struct
+struct MyDateTime{
+    days  : u32,
+    months: u32,
+    years : i32
+}
+
+impl MyDateTime{
+    pub fn new() -> MyDateTime{
+       let cur_time = chrono::Utc::now();
+        MyDateTime{days : cur_time.day(), months: cur_time.month(), years: cur_time.year()}
+    }
+
+    pub fn add_days(&mut self, num_days : u32){
+        self.days += num_days;
+    }
+
+}
+
 /// Renders the home page of your application.
 #[component]
 fn HomePage(cx: Scope) -> impl IntoView {
     // Creates a reactive value to update the button
     let (today, set_today) = create_signal(cx,chrono::Utc::now());
+    let myinit = MyDateTime::new();
+    let (mytoday, myset_today) = create_signal(cx,myinit);
     //let (year, set_year)          = create_signal(cx,today.get().year());
     //let (month, set_month) = create_signal(cx,today.get().month());
     //let (day, set_day)   = create_signal(cx,today.get().day());
     let (count, set_count) = create_signal(cx, 0);
+ let inc_date =
+     move |_| set_today.update(
+        |today|{ 
+        *today += chrono::Duration::days(1);
+        log!("in inc_date2: today is now {}-{}-{}",today.year(),today.month(),today.day());
+    });
 
+    let dec_date = 
+    move |_| set_today.update(
+        |today| {
+        *today -= chrono::Duration::days(1);
+        log!("in dec_date2: today is now {}-{}-{}",today.year(),today.month(),today.day());
+    });
+    
     view! { cx,
-        <Date date_today=today.get()  set_today_date=set_today/>
+        //<Date date_today=today  set_today_date=set_today/>
+        <div class="Row">
+            <div class="Column">
+                <button on:click= dec_date> "<" </button>
+            </div>
+            <div class="Column">
+                <h1>"Today: " {today().year()} " - " {today().month()} " - "  {today().day()}</h1>
+            </div>
+            <div class="Column">
+                <button on:click= inc_date> ">" </button>
+            </div>
+        </div>
         <CounterButton  get_count_fn=count set_count_fn= set_count/> //Add 1
         <EnterValueField /> //set arbitrary
         <CalendarDay day_num = 1 />
