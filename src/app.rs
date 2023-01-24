@@ -126,21 +126,57 @@ fn CalendarDay(cx: Scope, day_num : u32) -> impl IntoView{
     }
 }
 
+#[component]
+fn Date(cx : Scope, date_today : chrono::DateTime<chrono::Utc>, set_today_date : WriteSignal<chrono::DateTime<chrono::Utc>>) -> impl IntoView{
+    let inc_date =
+     move |_| set_today_date.update(
+        |today|{ 
+        *today += chrono::Duration::days(1);
+        log!("today is now {}-{}-{}",today.year(),today.month(),today.day());
+    });
+
+    let dec_date = 
+    move |_| set_today_date.update(
+        |today| {
+        *today -= chrono::Duration::days(1);
+        log!("today is now {}-{}-{}",today.year(),today.month(),today.day());
+    });
+    let year_ret  = set_today_date.update_returning(|today| today.year());
+    let month_ret = set_today_date.update_returning(|today| today.month());
+    let day_ret   = set_today_date.update_returning(|today| today.day());
+    let year  = year_ret.unwrap();
+    let month = month_ret.unwrap();
+    let day   = day_ret.unwrap();
+    //let day = date_today.
+    view!{cx,
+        <div class="Row">
+            <div class="Column">
+                <button on:click= dec_date> "<" </button>
+            </div>
+            <div class="Column">
+                <h1>"Today: " {year} " - " {month} " - "  {date_today.day()}</h1>
+            </div>
+            <div class="Column">
+                <button on:click= inc_date> ">" </button>
+            </div>
+        </div>
+    }
+}
+
 /// Renders the home page of your application.
 #[component]
 fn HomePage(cx: Scope) -> impl IntoView {
     // Creates a reactive value to update the button
     let (today, set_today) = create_signal(cx,chrono::Utc::now());
-    let (year, set_year)          = create_signal(cx,today.get().year());
-    let (month, set_month) = create_signal(cx,today.get().month());
-    let (day, set_day)   = create_signal(cx,today.get().day());
+    //let (year, set_year)          = create_signal(cx,today.get().year());
+    //let (month, set_month) = create_signal(cx,today.get().month());
+    //let (day, set_day)   = create_signal(cx,today.get().day());
     let (count, set_count) = create_signal(cx, 0);
 
     view! { cx,
-       
-        <h1>"Today: " {year} " - " {month} " - "  {day}</h1>
+        <Date date_today=today.get()  set_today_date=set_today/>
         <CounterButton  get_count_fn=count set_count_fn= set_count/> //Add 1
         <EnterValueField /> //set arbitrary
-        <CalendarDay day_num = day.get()/>
+        <CalendarDay day_num = 1 />
     }
 }
