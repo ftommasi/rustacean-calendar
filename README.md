@@ -23,7 +23,7 @@ to generate a new project template.
 
 to go to your newly created project.
 
-Of course you should explore around the project structure, but the best place to start with your application code is in `src/app/mod.rs`.
+Of course you should explore around the project structure, but the best place to start with your application code is in `src/app.rs`.
 
 ## Running your project
 
@@ -37,4 +37,4 @@ By default, `cargo-leptos` uses `nightly` Rust, `cargo-generate`, and `sass`. If
 2. `rustup default nightly` - setup nightly as default, or you can use rust-toolchain file later on
 3. `rustup target add wasm32-unknown-unknown` - add the ability to compile Rust to WebAssembly
 4. `cargo install cargo-generate` - install `cargo-generate` binary (should be installed automatically in future)
-5. `npm install -g sass` - install `dart-sass` (should be optional in future
+5. `npm install -g sass` - install `dart-sass` (should be optional in future)
